@@ -29,7 +29,7 @@ pipeline {
 
         stage('Run Tests') {
             steps {
-                sh '.venv/bin/python -m pytest -v application/tests/'
+                sh 'PYTHONPATH=application .venv/bin/python -m pytest -v application/tests/'
             }
         }
     }
