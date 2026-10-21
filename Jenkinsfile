@@ -32,5 +32,15 @@ pipeline {
                 sh 'PYTHONPATH=application .venv/bin/python -m pytest -v application/tests/'
             }
         }
+        stage('Build Docker Image') {
+            steps {
+                sh '''
+                    docker build \
+                        -t devops-status-app:1.0.0 \
+                        -f application/Dockerfile \
+                        application
+                '''
+            }
+        }
     }
 }
