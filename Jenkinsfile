@@ -42,5 +42,34 @@ pipeline {
                 '''
             }
         }
+        stage('Push to AWS ECR') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'aws-ecr-credentials',
+                    usernameVariable: 'AWS_ACCESS_KEY_ID',
+                    passwordVariable: 'AWS_SECRET_ACCESS_KEY'
+                )]) {
+                    sh '''
+                        set -e
+
+                        export AWS_ACCESS_KEY_ID
+                        export AWS_SECRET_ACCESS_KEY
+                        export AWS_DEFAULT_REGION=us-east-1
+
+                        ECR_REGISTRY="721366939861.dkr.ecr.us-east-1.amazonaws.com"
+                        ECR_REPOSITORY="automated-production-deployment-platform"
+                        IMAGE_TAG="1.0.0"
+
+                        aws ecr get-login-password --region "$AWS_DEFAULT_REGION" \
+                          | docker login --username AWS --password-stdin "$ECR_REGISTRY"
+
+                        docker tag devops-status-app:$IMAGE_TAG \
+                          "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+                        docker push "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+                    '''
+                }
+            }
+        }
     }
 }
