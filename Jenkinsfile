@@ -50,8 +50,8 @@ pipeline {
         }
         stage('Push to AWS ECR') {
             when {
-        expression { params.PUSH_TO_ECR }
-    }
+                expression { params.PUSH_TO_ECR }
+            }
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'aws-ecr-credentials',
@@ -67,15 +67,18 @@ pipeline {
 
                         ECR_REGISTRY="721366939861.dkr.ecr.us-east-1.amazonaws.com"
                         ECR_REPOSITORY="automated-production-deployment-platform"
-                        IMAGE_TAG="1.0.0"
+                        IMAGE_NAME="$ECR_REGISTRY/$ECR_REPOSITORY"
+                        VERSION_TAG="1.0.0"
+                        BUILD_TAG="build-${BUILD_NUMBER}"
 
                         aws ecr get-login-password --region "$AWS_DEFAULT_REGION" \
                           | docker login --username AWS --password-stdin "$ECR_REGISTRY"
 
-                        docker tag devops-status-app:$IMAGE_TAG \
-                          "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+                        docker tag "devops-status-app:$VERSION_TAG" "$IMAGE_NAME:$VERSION_TAG"
+                        docker tag "devops-status-app:$VERSION_TAG" "$IMAGE_NAME:$BUILD_TAG"
 
-                        docker push "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+                        docker push "$IMAGE_NAME:$VERSION_TAG"
+                        docker push "$IMAGE_NAME:$BUILD_TAG"
                     '''
                 }
             }
