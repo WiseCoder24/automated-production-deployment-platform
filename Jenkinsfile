@@ -1,7 +1,13 @@
 
 pipeline {
     agent any
-
+    parameters {
+    booleanParam(
+        name: 'PUSH_TO_ECR',
+        defaultValue: false,
+        description: 'Push the Docker image to AWS ECR'
+    )
+}
     stages {
         stage('Checkout') {
             steps {
@@ -43,6 +49,9 @@ pipeline {
             }
         }
         stage('Push to AWS ECR') {
+            when {
+        expression { params.PUSH_TO_ECR }
+    }
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'aws-ecr-credentials',
